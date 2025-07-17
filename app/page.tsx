@@ -4,12 +4,9 @@ import { useChat } from '@ai-sdk/react';
 import { ChevronDown, FileText, Settings, Globe, Zap, Search } from 'lucide-react';
 import {ModelSelector} from "@/components/model-selector/page"
 
-
-
-
 const Chat = () => {
   const [selectedModel, setSelectedModel] = useState({
-    id: 'claude-3-sonnet',
+    id: 'claude-3-5-sonnet-20241022',
     name: 'Claude 3.5 Sonnet',
     provider: 'anthropic',
     capabilities: ['tools', 'vision', 'web'],
@@ -18,50 +15,78 @@ const Chat = () => {
   });
 
   const models = [
-    {
-      id: 'gpt-4',
-      name: 'GPT-4 Turbo',
-      provider: 'openai',
-      capabilities: ['tools', 'vision'],
-      speed: 'medium',
-      description: 'OpenAI\'s most capable model'
-    },
-    {
-      id: 'gpt-4o-mini',
-      name: 'GPT-4o Mini',
-      provider: 'openai',
-      capabilities: ['tools', 'vision'],
-      speed: 'fast',
-      description: 'Faster, cost-effective model'
-    },
-    {
-      id: 'claude-3-sonnet',
-      name: 'Claude 3.5 Sonnet',
-      provider: 'anthropic',
-      capabilities: ['tools', 'vision', 'web'],
-      speed: 'medium',
-      description: 'Most capable model for complex tasks'
-    },
-    {
-      id: 'claude-3-opus',
-      name: 'Claude 3 Opus',
-      provider: 'anthropic',
-      capabilities: ['tools', 'vision'],
-      speed: 'slow',
-      description: 'Highest quality reasoning'
-    },
-    {
-      id: 'gemini-pro',
-      name: 'Gemini Pro',
-      provider: 'google',
-      capabilities: ['tools', 'vision'],
-      speed: 'fast',
-      description: 'Google\'s multimodal AI'
-    },
-    
-  ];
+  {
+    id: 'gpt-4-turbo',
+    name: 'GPT-4 Turbo',
+    provider: 'openai',
+    capabilities: ['tools', 'vision'],
+    speed: 'medium',
+    description: 'OpenAI\'s most capable model'
+  },
+  {
+    id: 'gpt-4o-mini',
+    name: 'GPT-4o Mini',
+    provider: 'openai',
+    capabilities: ['tools', 'vision'],
+    speed: 'fast',
+    description: 'Faster, cost-effective model'
+  },
+  {
+    id: 'claude-3-5-sonnet-20241022',
+    name: 'Claude 3.5 Sonnet',
+    provider: 'anthropic',
+    capabilities: ['tools', 'vision', 'web'],
+    speed: 'medium',
+    description: 'Most capable model for complex tasks'
+  },
+  {
+    id: 'claude-3-opus-20240229',
+    name: 'Claude 3 Opus',
+    provider: 'anthropic',
+    capabilities: ['tools', 'vision'],
+    speed: 'slow',
+    description: 'Highest quality reasoning'
+  },
+  {
+    id: 'gemini-pro',
+    name: 'Gemini Pro',
+    provider: 'google',
+    capabilities: ['tools', 'vision'],
+    speed: 'fast',
+    description: 'Google\'s multimodal AI'
+  },
+  {
+    id: 'qwen-max-2025-01-25',
+    name: 'Qwen2.5-Max',
+    provider: 'qwen',
+    capabilities: ['tools', 'vision', 'reasoning'],
+    speed: 'medium',
+    description: 'Alibaba\'s latest large-scale MoE model'
+  },
+  {
+    id: 'qwen-turbo',
+    name: 'Qwen Turbo',
+    provider: 'qwen',
+    capabilities: ['tools'],
+    speed: 'fast',
+    description: 'Faster Qwen model for quick responses'
+  },
+  {
+    id: 'qwen-plus',
+    name: 'Qwen Plus',
+    provider: 'qwen',
+    capabilities: ['tools', 'vision'],
+    speed: 'medium',
+    description: 'Better performance Qwen model'
+  }
+];
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({});
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    body: {
+      modelId: selectedModel.id,
+      provider: selectedModel.provider
+    }
+  });
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
