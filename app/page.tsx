@@ -1,130 +1,217 @@
-'use client'
-import React, { useState } from 'react';
-import { useChat } from '@ai-sdk/react';
-import { ChevronDown, FileText, Settings, Globe, Zap, Search } from 'lucide-react';
-import {ModelSelector} from "@/components/model-selector/page"
+"use client";
+import React, { useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import {
+  ChevronDown,
+  FileText,
+  Settings,
+  Globe,
+  Zap,
+  Search,
+} from "lucide-react";
+import { ModelSelector } from "@/components/model-selector/page";
+import { models } from "@/data/models";
 
 const Chat = () => {
   const [selectedModel, setSelectedModel] = useState({
-    id: 'claude-3-5-sonnet-20241022',
-    name: 'Claude 3.5 Sonnet',
-    provider: 'anthropic',
-    capabilities: ['tools', 'vision', 'web'],
-    speed: 'medium',
-    description: 'Most capable model for complex tasks'
+    id: "claude-3-5-sonnet-20241022",
+    name: "Claude 3.5 Sonnet",
+    provider: "anthropic",
+    capabilities: ["tools", "vision", "web"],
+    speed: "medium",
+    description: "Most capable model for complex tasks",
   });
 
-  const models = [
-  {
-    id: 'gpt-4-turbo',
-    name: 'GPT-4 Turbo',
-    provider: 'openai',
-    capabilities: ['tools', 'vision'],
-    speed: 'medium',
-    description: 'OpenAI\'s most capable model'
-  },
-  {
-    id: 'gpt-4o-mini',
-    name: 'GPT-4o Mini',
-    provider: 'openai',
-    capabilities: ['tools', 'vision'],
-    speed: 'fast',
-    description: 'Faster, cost-effective model'
-  },
-  {
-    id: 'claude-3-5-sonnet-20241022',
-    name: 'Claude 3.5 Sonnet',
-    provider: 'anthropic',
-    capabilities: ['tools', 'vision', 'web'],
-    speed: 'medium',
-    description: 'Most capable model for complex tasks'
-  },
-  {
-    id: 'claude-3-opus-20240229',
-    name: 'Claude 3 Opus',
-    provider: 'anthropic',
-    capabilities: ['tools', 'vision'],
-    speed: 'slow',
-    description: 'Highest quality reasoning'
-  },
-  {
-    id: 'gemini-pro',
-    name: 'Gemini Pro',
-    provider: 'google',
-    capabilities: ['tools', 'vision'],
-    speed: 'fast',
-    description: 'Google\'s multimodal AI'
-  },
-  {
-    id: 'qwen-max-2025-01-25',
-    name: 'Qwen2.5-Max',
-    provider: 'qwen',
-    capabilities: ['tools', 'vision', 'reasoning'],
-    speed: 'medium',
-    description: 'Alibaba\'s latest large-scale MoE model'
-  },
-  {
-    id: 'qwen-turbo',
-    name: 'Qwen Turbo',
-    provider: 'qwen',
-    capabilities: ['tools'],
-    speed: 'fast',
-    description: 'Faster Qwen model for quick responses'
-  },
-  {
-    id: 'qwen-plus',
-    name: 'Qwen Plus',
-    provider: 'qwen',
-    capabilities: ['tools', 'vision'],
-    speed: 'medium',
-    description: 'Better performance Qwen model'
-  }
-];
+  
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    body: {
-      modelId: selectedModel.id,
-      provider: selectedModel.provider
-    }
-  });
+  const { messages, input, handleInputChange, handleSubmit, isLoading } =
+    useChat({
+      body: {
+        modelId: selectedModel.id,
+        provider: selectedModel.provider,
+      },
+    });
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
     const syntheticEvent = {
-      preventDefault: () => { },
-      target: { value: input }
+      preventDefault: () => {},
+      target: { value: input },
     };
 
     handleSubmit(syntheticEvent);
+  };
+
+  console.log("Messages:", JSON.stringify(messages, null, 2));
+
+  const renderMessageContent = (message) => {
+    const parts = [];
+ 
+    if (message.parts && message.parts.length > 0) {
+      message.parts.forEach((part, i) => {
+        switch (part.type) {
+          case "text":
+            parts.push(
+              <div key={`part-text-${i}`} className="text-white whitespace-pre-wrap">
+                {part.text}
+              </div>
+            );
+            break;
+          case "step-start":
+            parts.push(
+              <div key={`part-step-${i}`} className="text-blue-400 text-sm flex items-center gap-1">
+                <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
+                Processing...
+              </div>
+            );
+            break;
+          case "source":
+            parts.push(
+              <div key={`part-source-${i}`} className="text-blue-400 underline">
+                <a
+                  href={part.source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Source: {part.source.url}
+                </a>
+              </div>
+            );
+            break;
+          case "reasoning":
+            parts.push(
+              <div
+                key={`part-reasoning-${i}`}
+                className="bg-yellow-900/30 border border-yellow-600 text-yellow-100 p-3 rounded-lg mt-2"
+              >
+                <div className="text-yellow-200 font-semibold mb-1">Reasoning:</div>
+                {part.reasoning}
+              </div>
+            );
+            break;
+          case "tool-invocation":
+            const toolInv = part.toolInvocation;
+            parts.push(
+              <div key={`part-tool-${i}`} className="bg-purple-900/30 border border-purple-600 rounded-lg p-3 mt-2">
+                <div className="text-purple-300 font-semibold flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  Tool: {toolInv?.toolName || 'Unknown'}
+                  <span className={`text-xs px-2 py-1 rounded ${
+                    toolInv?.state === 'call' ? 'bg-yellow-600 text-yellow-100' : 
+                    toolInv?.state === 'result' ? 'bg-green-600 text-green-100' : 
+                    'bg-gray-600 text-gray-100'
+                  }`}>
+                    {toolInv?.state || 'unknown'}
+                  </span>
+                </div>
+                {toolInv?.args && Object.keys(toolInv.args).length > 0 && (
+                  <pre className="text-purple-100 text-xs bg-purple-900/50 p-2 rounded mt-2 overflow-x-auto">
+                    {JSON.stringify(toolInv.args, null, 2)}
+                  </pre>
+                )}
+                {toolInv?.result && (
+                  <div className="mt-2">
+                    <div className="text-green-200 text-sm">Result:</div>
+                    <div className="bg-green-900/30 p-2 rounded mt-1">
+                      {toolInv.result.content && toolInv.result.content.map((contentItem, contentIndex) => {
+                        if (contentItem.type === 'text') {
+                          return (
+                            <div key={contentIndex} className="text-green-100 text-sm whitespace-pre-wrap">
+                              {contentItem.text}
+                            </div>
+                          );
+                        }
+                        return (
+                          <pre key={contentIndex} className="text-green-100 text-xs overflow-x-auto">
+                            {JSON.stringify(contentItem, null, 2)}
+                          </pre>
+                        );
+                      })}
+                      {!toolInv.result.content && (
+                        <pre className="text-green-100 text-xs overflow-x-auto">
+                          {typeof toolInv.result === 'string' ? toolInv.result : JSON.stringify(toolInv.result, null, 2)}
+                        </pre>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+            break;
+          case "tool-result":
+            parts.push(
+              <div key={`part-tool-result-${i}`} className="bg-green-900/30 border border-green-600 rounded-lg p-3 mt-2">
+                <div className="text-green-300 font-semibold flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  Tool Result: {part.toolCallId}
+                </div>
+                <pre className="text-green-100 text-xs bg-green-900/50 p-2 rounded mt-2 overflow-x-auto">
+                  {typeof part.result === 'string' ? part.result : JSON.stringify(part.result, null, 2)}
+                </pre>
+              </div>
+            );
+            break;
+          case "file":
+            parts.push(
+              <img
+                key={`part-file-${i}`}
+                src={`data:${part.mimeType};base64,${part.data}`}
+                alt="AI Output"
+                className="rounded max-w-xs mt-2"
+              />
+            );
+            break;
+          default:
+            parts.push(
+              <div key={`part-unknown-${i}`} className="text-red-400 italic bg-red-900/20 p-2 rounded mt-2">
+                Unsupported part type: {part.type}
+                <pre className="text-xs mt-1 text-red-300">
+                  {JSON.stringify(part, null, 2)}
+                </pre>
+              </div>
+            );
+        }
+      });
+    }
+
+    if (parts.length === 0) {
+      parts.push(
+        <div key="fallback" className="text-gray-400 bg-gray-900/20 p-2 rounded">
+          <div className="text-sm">Raw message data:</div>
+          <pre className="text-xs mt-1 overflow-x-auto">
+            {JSON.stringify(message, null, 2)}
+          </pre>
+        </div>
+      );
+    }
+
+    return <div className="space-y-2">{parts}</div>;
   };
 
   return (
     <div className="flex flex-col h-screen bg-black text-white">
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-3xl mx-auto">
-          {messages.map(message => (
+          {messages.map((message) => (
             <div key={message.id} className="mb-6">
-              <div className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
-                {message.role === 'assistant' && (
+              <div
+                className={`flex items-start gap-3 ${
+                  message.role === "user" ? "justify-end" : ""
+                }`}
+              >
+                {message.role === "assistant" && (
                   <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-sm">✦</span>
                   </div>
                 )}
-                <div className={`max-w-2xl ${message.role === 'user' ? 'bg-zinc-800 rounded-lg p-3' : ''}`}>
-                  <div className="whitespace-pre-wrap">
-                    {message.content || (
-                      message.parts?.map((part, i) => {
-                        switch (part.type) {
-                          case 'text':
-                            return <div key={`${message.id}-${i}`}>{part.text}</div>;
-                          default:
-                            return null;
-                        }
-                      })
-                    )}
-                  </div>
+                <div
+                  className={`max-w-2xl ${
+                    message.role === "user" ? "bg-zinc-800 rounded-lg p-3" : ""
+                  }`}
+                >
+                  {renderMessageContent(message)}
                 </div>
               </div>
             </div>
@@ -161,7 +248,7 @@ const Chat = () => {
                   rows={1}
                   disabled={isLoading}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
+                    if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
                       handleFormSubmit(e);
                     }
@@ -178,13 +265,13 @@ const Chat = () => {
 
           <div className="mt-2 flex items-center gap-2 text-xs text-zinc-400">
             <span>Using {selectedModel.name}</span>
-            {selectedModel.capabilities.includes('tools') && (
+            {selectedModel.capabilities.includes("tools") && (
               <span className="flex items-center gap-1">
                 <Settings className="w-3 h-3" />
                 Tools
               </span>
             )}
-            {selectedModel.capabilities.includes('vision') && (
+            {selectedModel.capabilities.includes("vision") && (
               <span className="flex items-center gap-1">
                 <FileText className="w-3 h-3" />
                 Vision
