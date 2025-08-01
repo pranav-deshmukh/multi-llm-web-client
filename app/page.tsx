@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
 import {
   ChevronDown,
@@ -13,6 +13,7 @@ import { ModelSelector } from "@/components/model-selector/page";
 import { models } from "@/data/models";
 
 const Chat = () => {
+  const bottomRef = useRef<HTMLDivElement>(null);
   const [selectedModel, setSelectedModel] = useState({
     id: "claude-3-5-sonnet-20241022",
     name: "Claude 3.5 Sonnet",
@@ -26,12 +27,21 @@ const Chat = () => {
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
     useChat({
-      body: {
+      api: "/api/chat",
+      experimental_prepareRequestBody:({messages, id, ...rest}) => ({
+        messages,
+        id,
+        ...rest,
         modelId: selectedModel.id,
         provider: selectedModel.provider,
-      },
+      })
     });
-
+    
+    useEffect(() => {
+      if(bottomRef.current){
+        bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    },[messages])
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -216,6 +226,7 @@ const Chat = () => {
               </div>
             </div>
           ))}
+          <div ref={bottomRef}></div>
           {isLoading && (
             <div className="mb-6">
               <div className="flex items-start gap-3">

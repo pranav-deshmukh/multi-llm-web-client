@@ -32,8 +32,8 @@ export const models = [
       description: "Highest quality reasoning",
     },
     {
-      id: "gemini-pro",
-      name: "Gemini Pro",
+      id: "gemini-2.5-flash",
+      name: "gemini-2.5-flash",
       provider: "google",
       capabilities: ["tools", "vision"],
       speed: "fast",

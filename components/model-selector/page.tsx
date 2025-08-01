@@ -2,7 +2,10 @@ import { useState } from "react";
 import { ChevronDown, FileText, Settings, Globe, Zap, Search } from 'lucide-react';
 
 
-export const ModelSelector = ({ selectedModel, onModelChange, models }) => {
+export const ModelSelector = ({ selectedModel, onModelChange, models }:{
+  selectedModel: string,
+  models: any,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
