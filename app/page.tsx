@@ -54,7 +54,7 @@ const Chat = () => {
     handleSubmit(syntheticEvent);
   };
 
-  console.log("Messages:", JSON.stringify(messages, null, 2));
+  // console.log("Messages:", JSON.stringify(messages, null, 2));
 
   const renderMessageContent = (message) => {
     const parts = [];
