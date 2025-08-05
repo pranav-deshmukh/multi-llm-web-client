@@ -200,9 +200,31 @@ const Chat = () => {
     return <div className="space-y-2">{parts}</div>;
   };
 
+  const storeData = async () => {
+    const response = await fetch("/api/store", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: "123",
+        messages: messages,
+        modelId: selectedModel.id,
+        provider: selectedModel.provider,
+      }),
+    });
+
+    if (response.ok) {
+      console.log("Data stored successfully");
+    } else {
+      console.error("Failed to store data:", response.statusText);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-black text-white">
       <div className="flex-1 overflow-y-auto p-4">
+    
         <div className="max-w-3xl mx-auto">
           {messages.map((message) => (
             <div key={message.id} className="mb-6">
@@ -271,6 +293,7 @@ const Chat = () => {
                 onModelChange={setSelectedModel}
                 models={models}
               />
+              <button onClick={storeData} className="bg-gray-800 p-2 rounded-lg text-sm">Store Data</button>
             </div>
           </div>
 
