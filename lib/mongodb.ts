@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = "mongodb://localhost:27017/multi-llm-web-client";
+const MONGODB_URI = "";
 
 export const connectToMongoDB = async () => {
     try {

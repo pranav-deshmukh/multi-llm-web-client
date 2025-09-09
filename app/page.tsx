@@ -8,9 +8,97 @@ import {
   Globe,
   Zap,
   Search,
+  Server,
 } from "lucide-react";
 import { ModelSelector } from "@/components/model-selector/page";
 import { models } from "@/data/models";
+import { Toaster, toast } from 'sonner';
+
+
+const mcpServers = [
+  {
+    id: "none",
+    name: "No MCP Server",
+    description: "Use AI model without MCP tools",
+    command: null,
+    args: null,
+  },
+  {
+    id: "calculator",
+    name: "Calculator Server",
+    description: "Python-based calculator MCP server",
+    command: "python",
+    args: ["-m", "mcp_server_calculator"],
+  },
+  {
+    id: "blender",
+    name: "Blender Server",
+    description: "Node.js Blender MCP server",
+    command: "node",
+    args: ["C:/Users/prana/OneDrive/Desktop/Code/mcp-try/index.js"],
+  },
+  // Add more MCP servers here as needed
+  {
+    id: "figma",
+    name: "Framelink Figma MCP",
+    description: "Figma API MCP server for design operations",
+    command: "cmd",
+    args: ["/c", "npx", "-y", "C:/Users/prana/OneDrive/Desktop/Code/Figma-Context-MCP", "--figma-api-key=YOUR-KEY", "--stdio"]
+  },
+];
+const MCPServerSelector = ({ selectedServer, onServerChange, servers }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm hover:border-zinc-500 focus:outline-none focus:border-zinc-500"
+      >
+        <Server className="w-4 h-4" />
+        <span className="max-w-32 truncate">{selectedServer.name}</span>
+        <ChevronDown className="w-4 h-4" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute bottom-full mb-2 right-0 w-80 bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
+          {servers.map((server) => (
+            <button
+              key={server.id}
+              onClick={() => {
+                onServerChange(server);
+                setIsOpen(false);
+              }}
+              className="w-full text-left p-3 hover:bg-zinc-800 first:rounded-t-lg last:rounded-b-lg"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-white">
+                      {server.name}
+                    </span>
+                    {server.id === selectedServer.id && (
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    )}
+                  </div>
+                  <div className="text-xs text-zinc-400 mt-1">
+                    {server.description}
+                  </div>
+                  {server.command && (
+                    <div className="text-xs text-zinc-500 mt-1 font-mono">
+                      {server.command} {server.args?.join(" ")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Chat = () => {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -23,25 +111,27 @@ const Chat = () => {
     description: "Most capable model for complex tasks",
   });
 
-  
+  const [selectedMCPServer, setSelectedMCPServer] = useState(mcpServers[0]);
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
     useChat({
       api: "/api/chat",
-      experimental_prepareRequestBody:({messages, id, ...rest}) => ({
+      experimental_prepareRequestBody: ({ messages, id, ...rest }) => ({
         messages,
         id,
         ...rest,
         modelId: selectedModel.id,
         provider: selectedModel.provider,
-      })
+        mcpServer: selectedMCPServer,
+      }),
     });
-    
-    useEffect(() => {
-      if(bottomRef.current){
-        bottomRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    },[messages])
+
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -54,24 +144,28 @@ const Chat = () => {
     handleSubmit(syntheticEvent);
   };
 
-  // console.log("Messages:", JSON.stringify(messages, null, 2));
-
   const renderMessageContent = (message) => {
     const parts = [];
- 
+
     if (message.parts && message.parts.length > 0) {
       message.parts.forEach((part, i) => {
         switch (part.type) {
           case "text":
             parts.push(
-              <div key={`part-text-${i}`} className="text-white whitespace-pre-wrap">
+              <div
+                key={`part-text-${i}`}
+                className="text-white whitespace-pre-wrap"
+              >
                 {part.text}
               </div>
             );
             break;
           case "step-start":
             parts.push(
-              <div key={`part-step-${i}`} className="text-blue-400 text-sm flex items-center gap-1">
+              <div
+                key={`part-step-${i}`}
+                className="text-blue-400 text-sm flex items-center gap-1"
+              >
                 <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
                 Processing...
               </div>
@@ -96,7 +190,9 @@ const Chat = () => {
                 key={`part-reasoning-${i}`}
                 className="bg-yellow-900/30 border border-yellow-600 text-yellow-100 p-3 rounded-lg mt-2"
               >
-                <div className="text-yellow-200 font-semibold mb-1">Reasoning:</div>
+                <div className="text-yellow-200 font-semibold mb-1">
+                  Reasoning:
+                </div>
                 {part.reasoning}
               </div>
             );
@@ -104,16 +200,23 @@ const Chat = () => {
           case "tool-invocation":
             const toolInv = part.toolInvocation;
             parts.push(
-              <div key={`part-tool-${i}`} className="bg-purple-900/30 border border-purple-600 rounded-lg p-3 mt-2">
+              <div
+                key={`part-tool-${i}`}
+                className="bg-purple-900/30 border border-purple-600 rounded-lg p-3 mt-2"
+              >
                 <div className="text-purple-300 font-semibold flex items-center gap-2">
                   <Settings className="w-4 h-4" />
-                  Tool: {toolInv?.toolName || 'Unknown'}
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    toolInv?.state === 'call' ? 'bg-yellow-600 text-yellow-100' : 
-                    toolInv?.state === 'result' ? 'bg-green-600 text-green-100' : 
-                    'bg-gray-600 text-gray-100'
-                  }`}>
-                    {toolInv?.state || 'unknown'}
+                  Tool: {toolInv?.toolName || "Unknown"}
+                  <span
+                    className={`text-xs px-2 py-1 rounded ${
+                      toolInv?.state === "call"
+                        ? "bg-yellow-600 text-yellow-100"
+                        : toolInv?.state === "result"
+                        ? "bg-green-600 text-green-100"
+                        : "bg-gray-600 text-gray-100"
+                    }`}
+                  >
+                    {toolInv?.state || "unknown"}
                   </span>
                 </div>
                 {toolInv?.args && Object.keys(toolInv.args).length > 0 && (
@@ -125,23 +228,34 @@ const Chat = () => {
                   <div className="mt-2">
                     <div className="text-green-200 text-sm">Result:</div>
                     <div className="bg-green-900/30 p-2 rounded mt-1">
-                      {toolInv.result.content && toolInv.result.content.map((contentItem, contentIndex) => {
-                        if (contentItem.type === 'text') {
-                          return (
-                            <div key={contentIndex} className="text-green-100 text-sm whitespace-pre-wrap">
-                              {contentItem.text}
-                            </div>
-                          );
-                        }
-                        return (
-                          <pre key={contentIndex} className="text-green-100 text-xs overflow-x-auto">
-                            {JSON.stringify(contentItem, null, 2)}
-                          </pre>
-                        );
-                      })}
+                      {toolInv.result.content &&
+                        toolInv.result.content.map(
+                          (contentItem, contentIndex) => {
+                            if (contentItem.type === "text") {
+                              return (
+                                <div
+                                  key={contentIndex}
+                                  className="text-green-100 text-sm whitespace-pre-wrap"
+                                >
+                                  {contentItem.text}
+                                </div>
+                              );
+                            }
+                            return (
+                              <pre
+                                key={contentIndex}
+                                className="text-green-100 text-xs overflow-x-auto"
+                              >
+                                {JSON.stringify(contentItem, null, 2)}
+                              </pre>
+                            );
+                          }
+                        )}
                       {!toolInv.result.content && (
                         <pre className="text-green-100 text-xs overflow-x-auto">
-                          {typeof toolInv.result === 'string' ? toolInv.result : JSON.stringify(toolInv.result, null, 2)}
+                          {typeof toolInv.result === "string"
+                            ? toolInv.result
+                            : JSON.stringify(toolInv.result, null, 2)}
                         </pre>
                       )}
                     </div>
@@ -152,13 +266,18 @@ const Chat = () => {
             break;
           case "tool-result":
             parts.push(
-              <div key={`part-tool-result-${i}`} className="bg-green-900/30 border border-green-600 rounded-lg p-3 mt-2">
+              <div
+                key={`part-tool-result-${i}`}
+                className="bg-green-900/30 border border-green-600 rounded-lg p-3 mt-2"
+              >
                 <div className="text-green-300 font-semibold flex items-center gap-2">
                   <Zap className="w-4 h-4" />
                   Tool Result: {part.toolCallId}
                 </div>
                 <pre className="text-green-100 text-xs bg-green-900/50 p-2 rounded mt-2 overflow-x-auto">
-                  {typeof part.result === 'string' ? part.result : JSON.stringify(part.result, null, 2)}
+                  {typeof part.result === "string"
+                    ? part.result
+                    : JSON.stringify(part.result, null, 2)}
                 </pre>
               </div>
             );
@@ -175,7 +294,10 @@ const Chat = () => {
             break;
           default:
             parts.push(
-              <div key={`part-unknown-${i}`} className="text-red-400 italic bg-red-900/20 p-2 rounded mt-2">
+              <div
+                key={`part-unknown-${i}`}
+                className="text-red-400 italic bg-red-900/20 p-2 rounded mt-2"
+              >
                 Unsupported part type: {part.type}
                 <pre className="text-xs mt-1 text-red-300">
                   {JSON.stringify(part, null, 2)}
@@ -188,7 +310,10 @@ const Chat = () => {
 
     if (parts.length === 0) {
       parts.push(
-        <div key="fallback" className="text-gray-400 bg-gray-900/20 p-2 rounded">
+        <div
+          key="fallback"
+          className="text-gray-400 bg-gray-900/20 p-2 rounded"
+        >
           <div className="text-sm">Raw message data:</div>
           <pre className="text-xs mt-1 overflow-x-auto">
             {JSON.stringify(message, null, 2)}
@@ -211,6 +336,7 @@ const Chat = () => {
         messages: messages,
         modelId: selectedModel.id,
         provider: selectedModel.provider,
+        mcpServer: selectedMCPServer,
       }),
     });
 
@@ -223,8 +349,8 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col h-screen bg-black text-white">
+      <Toaster />
       <div className="flex-1 overflow-y-auto p-4">
-    
         <div className="max-w-3xl mx-auto">
           {messages.map((message) => (
             <div key={message.id} className="mb-6">
@@ -293,12 +419,28 @@ const Chat = () => {
                 onModelChange={setSelectedModel}
                 models={models}
               />
-              <button onClick={storeData} className="bg-gray-800 p-2 rounded-lg text-sm">Store Data</button>
+              <MCPServerSelector
+                selectedServer={selectedMCPServer}
+                onServerChange={setSelectedMCPServer}
+                servers={mcpServers}
+              />
+              <button
+                onClick={storeData}
+                className="bg-gray-800 p-2 rounded-lg text-sm"
+              >
+                Store Data
+              </button>
             </div>
           </div>
 
           <div className="mt-2 flex items-center gap-2 text-xs text-zinc-400">
             <span>Using {selectedModel.name}</span>
+            {selectedMCPServer.id !== "none" && (
+              <span className="flex items-center gap-1">
+                <Server className="w-3 h-3" />
+                {selectedMCPServer.name}
+              </span>
+            )}
             {selectedModel.capabilities.includes("tools") && (
               <span className="flex items-center gap-1">
                 <Settings className="w-3 h-3" />
