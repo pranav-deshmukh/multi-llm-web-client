@@ -341,6 +341,7 @@ const Chat = () => {
     });
 
     if (response.ok) {
+      toast.success("Data stored successfully");
       console.log("Data stored successfully");
     } else {
       console.error("Failed to store data:", response.statusText);
@@ -349,7 +350,7 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col h-screen bg-black text-white">
-      <Toaster />
+      <Toaster position="top-center" richColors/>
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-3xl mx-auto">
           {messages.map((message) => (
