@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import { ModelSelector } from "@/components/model-selector/page";
 import { models } from "@/data/models";
-import { Toaster, toast } from 'sonner';
+import { Toaster, toast } from "sonner";
+
 
 
 const mcpServers = [
@@ -31,6 +32,13 @@ const mcpServers = [
     args: ["-m", "mcp_server_calculator"],
   },
   {
+    id: "google scholar",
+    name: "Google Scholar Server",
+    description: "Python-based google scholar MCP server",
+    command: "python",
+    args: ["C:/Users/prana/OneDrive/Desktop/MCPs/Google-Scholar-MCP-Server/google_scholar_server.py"],
+  },
+  {
     id: "blender",
     name: "Blender Server",
     description: "Node.js Blender MCP server",
@@ -42,16 +50,69 @@ const mcpServers = [
     id: "figma",
     name: "Framelink Figma MCP",
     description: "Figma API MCP server for design operations",
-    command: "cmd",
-    args: ["/c", "npx", "-y", "C:/Users/prana/OneDrive/Desktop/Code/Figma-Context-MCP", "--figma-api-key=YOUR-KEY", "--stdio"]
+    command: "node",
+    args: [
+      "C:/Users/prana/OneDrive/Desktop/Code/Figma-Context-MCP/dist/cli.js",
+      `--figma-api-key=${process.env.FIGMA_API_KEY}`,
+      "--stdio",
+    ],
   },
+  {
+  "id": "mongodb",
+  "name": "MongoDB MCP",
+  "command": "docker",
+  "args": [
+    "run",
+    "--rm",
+    "-i",
+    "-e",
+    "MDB_MCP_CONNECTION_STRING=mongodb+srv://pranavdeshmukh190_db_user:D3FbjgdkXKZGeAnQ@llm-benchmarking.5vb7sna.mongodb.net/mcp",
+    "-e",
+    "MDB_MCP_READ_ONLY=true",
+    "mongodb/mongodb-mcp-server:latest"
+  ]
+  
+},
+{
+  id: "github",
+  name: "GitHub MCP (Docker)",
+  command: "docker",
+  args: [
+    "run",
+    "--rm",
+    "-i",
+    "-e",
+    `GITHUB_PERSONAL_ACCESS_TOKEN=${process.env.NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN}`,
+    "ghcr.io/github/github-mcp-server:latest"
+  ]
+},
+{
+    id: "notion",
+    name: "Notion MCP",
+    command: "docker",
+    args: [
+      "run",
+      "--rm",
+      "-i",
+      "-e",
+      "NOTION_TOKEN",
+      "mcp/notion"
+    ],
+    env: {
+      NOTION_TOKEN: `${process.env.NEXT_PUBLIC_NOTION_TOKEN}`
+    }
+  }
+
+
 ];
 const MCPServerSelector = ({ selectedServer, onServerChange, servers }) => {
   const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+  console.log(process.env.NEXT_PUBLIC_NOTION_TOKEN)
+}, [])
 
   return (
     <div className="relative">
-      
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm hover:border-zinc-500 focus:outline-none focus:border-zinc-500"
@@ -325,32 +386,42 @@ const Chat = () => {
     return <div className="space-y-2">{parts}</div>;
   };
 
-  const storeData = async () => {
-    const response = await fetch("/api/store", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: "123",
-        messages: messages,
-        modelId: selectedModel.id,
-        provider: selectedModel.provider,
-        mcpServer: selectedMCPServer,
-      }),
-    });
+  // Update the storeData function in your Chat component
+const storeData = async () => {
+  // Generate a unique test case ID based on the prompt
+  const testCaseId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const prompt = messages.find(m => m.role === "user")?.content || "";
 
-    if (response.ok) {
-      toast.success("Data stored successfully");
-      console.log("Data stored successfully");
-    } else {
-      console.error("Failed to store data:", response.statusText);
-    }
-  };
+  const response = await fetch("/api/benchmark/store", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      modelId: selectedModel.id,
+      modelName: selectedModel.name,
+      provider: selectedModel.provider,
+      mcpServer: selectedMCPServer,
+      testCaseId,
+      prompt,
+      messages: messages,
+      testSuiteVersion: "v1.0",
+    }),
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    toast.success(`Test case stored! (${data.testCasesCompleted} tests completed)`);
+    console.log("Current metrics:", data.currentMetrics);
+  } else {
+    toast.error("Failed to store test case");
+    console.error("Failed to store data:", response.statusText);
+  }
+};
 
   return (
     <div className="flex flex-col h-screen bg-black text-white">
-      <Toaster position="top-center" richColors/>
+      <Toaster position="top-center" richColors />
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-3xl mx-auto">
           {messages.map((message) => (
@@ -396,7 +467,7 @@ const Chat = () => {
       </div>
 
       <div className="border-t border-zinc-800 p-4">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-[1000px] mx-auto">
           <div className="relative">
             <div className="flex items-end gap-3">
               <div className="flex-1">
@@ -421,6 +492,7 @@ const Chat = () => {
                 models={models}
               />
               <MCPServerSelector
+              
                 selectedServer={selectedMCPServer}
                 onServerChange={setSelectedMCPServer}
                 servers={mcpServers}
