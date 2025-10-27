@@ -13,8 +13,15 @@ import {
 import { ModelSelector } from "@/components/model-selector/page";
 import { models } from "@/data/models";
 import { Toaster, toast } from "sonner";
+import TestRunner from "@/components/test-runner/TestRunner";
 
-
+export interface McpServerI{
+  id: string,
+  name: string,
+  description: string,
+  command: string,
+  args: string[],
+}
 
 const mcpServers = [
   {
@@ -105,7 +112,7 @@ const mcpServers = [
 
 
 ];
-const MCPServerSelector = ({ selectedServer, onServerChange, servers }) => {
+const MCPServerSelector = ({ selectedServer, onServerChange, servers }:{servers:McpServerI[], selectedServer:McpServerI, onServerChange:any}) => {
   const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
   console.log(process.env.NEXT_PUBLIC_NOTION_TOKEN)
@@ -503,6 +510,7 @@ const storeData = async () => {
               >
                 Store Data
               </button>
+              <TestRunner selectedMCPServer={selectedMCPServer} selectedModel={selectedModel} />
             </div>
           </div>
 

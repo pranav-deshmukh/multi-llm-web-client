@@ -6,13 +6,14 @@ import {
   experimental_createMCPClient as createMCPClient,
 } from "ai";
 import { Experimental_StdioMCPTransport as StdioMCPTransport } from "ai/mcp-stdio";
+import { McpServerI } from "@/app/page";
 
 export const maxDuration = 30;
-export const providerMap = { openai, anthropic, google };
+export const providerMap: { [key: string]: any } = { openai, anthropic, google };
 
 let mcpClients = new Map();
 
-const cleanupMCPClient = async (clientId) => {
+const cleanupMCPClient = async (clientId:string) => {
   const client = mcpClients.get(clientId);
   if (client) {
     try {
@@ -26,7 +27,7 @@ const cleanupMCPClient = async (clientId) => {
   }
 };
 
-const createMCPClientForServer = async (mcpServer) => {
+const createMCPClientForServer = async (mcpServer:McpServerI) => {
   if (!mcpServer || mcpServer.id === "none" || !mcpServer.command) {
     return null;
   }
@@ -105,6 +106,7 @@ export async function POST(req: Request) {
     const streamConfig = {
       model: providerFn(modelId),
       messages,
+      tools: {},
       maxSteps: 10,
     };
 
@@ -118,7 +120,7 @@ export async function POST(req: Request) {
     console.log(`Model invoked after ${modelInvokeStartTime - requestStartTime}ms`);
 
     return result.toDataStreamResponse();
-  } catch (error) {
+  } catch (error:any) {
     console.error('API error:', error);
     
     if (mcpClients.size > 0) {

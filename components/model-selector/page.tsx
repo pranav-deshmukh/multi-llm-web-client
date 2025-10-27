@@ -1,10 +1,19 @@
 import { useState } from "react";
 import { ChevronDown, FileText, Settings, Globe, Zap, Search } from 'lucide-react';
 
+export interface Model {
+    id: string,
+    name: string,
+    provider: string,
+    capabilities: string[],
+    speed: string,
+    description: string,
+  }
 
 export const ModelSelector = ({ selectedModel, onModelChange, models }:{
-  selectedModel: string,
-  models: any,
+  selectedModel: Model,
+  models: Model[],
+  onModelChange: any,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -34,7 +43,7 @@ export const ModelSelector = ({ selectedModel, onModelChange, models }:{
           <div className="max-h-96 overflow-y-auto">
             {models.map((model) => (
               <button
-                key={model.id}
+                key={model.name}
                 onClick={() => {
                   onModelChange(model);
                   setIsOpen(false);
@@ -51,16 +60,16 @@ export const ModelSelector = ({ selectedModel, onModelChange, models }:{
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-white font-medium">{model.name}</span>
                       {model.capabilities.includes('vision') && (
-                        <FileText className="w-4 h-4 text-blue-400" title="Supports images" />
+                        <FileText className="w-4 h-4 text-blue-400" />
                       )}
                       {model.capabilities.includes('tools') && (
-                        <Settings className="w-4 h-4 text-green-400" title="Supports tools" />
+                        <Settings className="w-4 h-4 text-green-400"  />
                       )}
                       {model.capabilities.includes('web') && (
-                        <Globe className="w-4 h-4 text-purple-400" title="Web access" />
+                        <Globe className="w-4 h-4 text-purple-400"  />
                       )}
                       {model.speed === 'fast' && (
-                        <Zap className="w-4 h-4 text-yellow-400" title="Fast model" />
+                        <Zap className="w-4 h-4 text-yellow-400"  />
                       )}
                     </div>
                     <div className="text-xs text-zinc-400">
