@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
@@ -197,6 +199,7 @@ const Chat = () => {
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
+      console.log(messages)
     }
   }, [messages]);
 

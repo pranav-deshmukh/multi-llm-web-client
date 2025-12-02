@@ -229,7 +229,7 @@ export const testSuite = {
     },
     {
       id: "mongo_002",
-      prompt: "Find all documents in the mcptestsessions collection",
+      prompt: "Find all documents in the evaluations collection",
       expectedTools: ["find_documents"],
       expectedArgs: { collection: "users", filter: {} },
       expectedResultType: "array",
@@ -239,7 +239,7 @@ export const testSuite = {
     {
       id: "mongo_003",
       prompt:
-        "Find models with modelid gemini-2.5-flash in mcptestsessions collection",
+        "Find models with modelid gemini-2.5-flash in evaluations collection",
       expectedTools: ["find_documents"],
       expectedArgs: { collection: "users", filter: { age: { $gt: 25 } } },
       expectedResultType: "array",
@@ -280,7 +280,7 @@ export const testSuite = {
     {
       id: "mongo_007",
       prompt:
-        "Find model performance with overall avgTCPA less than 0.75 in modelperformances collection",
+        "Find model performance with overall avgTCPA less than 0.75 in evaluations collection",
       expectedTools: ["find_documents"],
       expectedArgs: { collection: "products", filter: { price: { $lt: 100 } } },
       expectedResultType: "array",
@@ -344,6 +344,120 @@ export const testSuite = {
       expectedResultType: "file_content",
       difficulty: "medium",
       category: "file_access",
+    },
+  ],
+  blender: [
+    {
+      id: "blender_001",
+      prompt: "Check if Blender is connected and responsive",
+      expectedTools: ["test-blender-connection"],
+      expectedArgs: {},
+      expectedResultType: "connection_status",
+      difficulty: "easy",
+      category: "connection",
+    },
+    {
+      id: "blender_002",
+      prompt: "Create a default cube in Blender",
+      expectedTools: ["send-code-to-blender"],
+      expectedArgs: {
+        code: "import bpy\nbpy.ops.mesh.primitive_cube_add(location=(0,0,0))",
+      },
+      expectedResultType: "code_execution_result",
+      difficulty: "easy",
+      category: "object_creation",
+    },
+    {
+      id: "blender_003",
+      prompt: "Move the existing cube to coordinates (2, 1, 0.5)",
+      expectedTools: ["send-code-to-blender"],
+      expectedArgs: {
+        code: "import bpy\nobj = bpy.context.active_object\nobj.location = (2,1,0.5)",
+      },
+      expectedResultType: "code_execution_result",
+      difficulty: "medium",
+      category: "transformation",
+    },
+    {
+      id: "blender_004",
+      prompt: "Fetch the current scene and list all objects",
+      expectedTools: ["fetch-scene-from-blender"],
+      expectedArgs: {},
+      expectedResultType: "scene_data",
+      difficulty: "medium",
+      category: "scene_fetch",
+    },
+    {
+      id: "blender_005",
+      prompt:
+        "Test the full pipeline: check connection, add a sphere, then fetch the updated scene",
+      expectedTools: [
+        "test-blender-connection",
+        "send-code-to-blender",
+        "fetch-scene-from-blender",
+      ],
+      expectedArgs: {
+        step1: {},
+        step2: {
+          code: "import bpy\nbpy.ops.mesh.primitive_uv_sphere_add(location=(0,0,1))",
+        },
+        step3: {},
+      },
+      expectedResultType: "scene_update_validation",
+      difficulty: "medium",
+      category: "integration",
+    },
+    {
+      id: "blender_006",
+      prompt: "Assign a red material to the cube",
+      expectedTools: ["send-code-to-blender"],
+      expectedArgs: {
+        code: `
+import bpy
+mat = bpy.data.materials.new(name="RedMaterial")
+mat.use_nodes = True
+bsdf = mat.node_tree.nodes["Principled BSDF"]
+bsdf.inputs["Base Color"].default_value = (1,0,0,1)
+cube = bpy.data.objects.get("Cube")
+cube.data.materials.append(mat)
+`,
+      },
+      expectedResultType: "material_assignment",
+      difficulty: "medium",
+      category: "materials",
+    },
+    {
+      id: "blender_007",
+      prompt:
+        "Rotate the cube 90 degrees on the Z-axis and verify it using scene data",
+      expectedTools: ["send-code-to-blender", "fetch-scene-from-blender"],
+      expectedArgs: {
+        step1: {
+          code: "import bpy\ncube = bpy.data.objects['Cube']\ncube.rotation_euler[2] = 1.5708",
+        },
+        step2: {},
+      },
+      expectedResultType: "transformation_verification",
+      difficulty: "hard",
+      category: "rotation_validation",
+    },
+    {
+      id: "blender_008",
+      prompt: "Create a simple animation that moves the cube up and down",
+      expectedTools: ["send-code-to-blender"],
+      expectedArgs: {
+        code: `
+import bpy
+cube = bpy.data.objects['Cube']
+cube.location = (0,0,0)
+cube.keyframe_insert(data_path="location", frame=1)
+cube.location = (0,0,2)
+cube.keyframe_insert(data_path="location", frame=50)
+`,
+      },
+      expectedResultType: "animation_sequence",
+      difficulty: "hard",
+      category: "animation",
     },
   ],
 };

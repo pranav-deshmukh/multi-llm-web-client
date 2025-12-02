@@ -1,4 +1,6 @@
 // app/api/evaluate/store/route.ts
+// @ts-nocheck
+
 import { connectToMongoDB } from "@/lib/mongodb";
 import { Evaluation } from "@/models/evaluationModel";
 import { NextResponse } from "next/server";
@@ -19,7 +21,7 @@ function extractAutomatedMetrics(messages) {
 
   let userMsgTime = null;
   let finalMsgTime = null;
-
+  console.log(messages);
   messages.forEach((msg, idx) => {
     if (msg.role === "user" && !userMsgTime) {
       userMsgTime = new Date(msg.createdAt);
@@ -30,6 +32,7 @@ function extractAutomatedMetrics(messages) {
 
       if (msg.parts) {
         msg.parts.forEach(part => {
+          console.log(part);
           if (part.type === "tool-invocation" && part.toolInvocation) {
             const tool = part.toolInvocation;
             automated.totalToolCalls++;

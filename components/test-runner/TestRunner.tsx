@@ -1,4 +1,6 @@
 // components/test-runner/TestRunner.tsx
+// @ts-nocheck
+
 "use client";
 import React, { useState } from "react";
 import { toast } from "sonner";
@@ -57,7 +59,7 @@ export default function TestRunner({ selectedModel, selectedMCPServer }) {
             role: "user",
             content: test.prompt,
             createdAt: new Date().toISOString()
-          }
+          },
         ],
         modelId: selectedModel.id,
         provider: selectedModel.provider,
