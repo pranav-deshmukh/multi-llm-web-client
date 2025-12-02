@@ -75,7 +75,7 @@ const mcpServers = [
     "--rm",
     "-i",
     "-e",
-    "MDB_MCP_CONNECTION_STRING=mongodb+srv://pranavdeshmukh190_db_user:D3FbjgdkXKZGeAnQ@llm-benchmarking.5vb7sna.mongodb.net/mcp",
+    "MDB_MCP_CONNECTION_STRING=xxxxxxxxxxxxxxxxx",
     "-e",
     "MDB_MCP_READ_ONLY=true",
     "mongodb/mongodb-mcp-server:latest"
