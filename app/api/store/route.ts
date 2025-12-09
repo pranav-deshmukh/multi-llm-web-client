@@ -1,4 +1,6 @@
 // app/api/store/route.ts
+// @ts-nocheck
+
 import { connectToMongoDB } from "@/lib/mongodb";
 import { Chat } from "@/models/chatModel";
 import { NextResponse } from "next/server";

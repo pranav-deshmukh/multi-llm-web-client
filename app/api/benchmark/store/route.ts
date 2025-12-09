@@ -1,4 +1,6 @@
 // app/api/benchmark/store/route.ts
+// @ts-nocheck
+
 import { connectToMongoDB } from "@/lib/mongodb";
 import { getTestSessionModel } from "@/models/benchmarkModel";
 

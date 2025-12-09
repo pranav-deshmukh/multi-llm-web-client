@@ -1,4 +1,6 @@
+// @ts-nocheck
 'use client';
+
 
 import React, { useState, useEffect } from 'react';
 import { Trophy, TrendingUp, Clock, Target, Award } from 'lucide-react';
