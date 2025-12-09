@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛠️ MCP-Workbench (Multi-LLM Client)
 
-## Getting Started
+> **The integrated environment to Debug, Benchmark, and Evaluate your Model Context Protocol (MCP) servers.**
 
-First, run the development server:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚨 The Problem
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Building **Model Context Protocol (MCP)** servers is the easy part. Debugging them is hard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+When your LLM fails to use a tool correctly, is it because:
+1. The model is not capable enough?
+2. The tool description is vague?
+3. The JSON schema is malformed?
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**MCP-Workbench** is an open-source interface that lets you plug in any MCP server, chat with it using multiple models (Claude, GPT-4, etc.), and **run statistical evaluations** on tool performance.
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ✨ Key Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 🔌 Universal MCP Inspector
+Connect any local or remote MCP server (Filesystem, Brave Search, Postgres, etc.) directly to the web client.
+- **Tool Discovery:** Auto-detects available tools and resources.
+- **Interactive Chat:** Test tools manually in a chat interface to verify logic.
 
-## Deploy on Vercel
+### 📊 Eval-Stats Dashboard
+*Switch to the `eval-stats` branch to access this feature.*
+Stop guessing. Run evaluation datasets against your connected MCP tools.
+- **Success Rate Tracking:** See how often the model successfully calls the tool vs. failing.
+- **Performance Metrics:** Track latency and execution reliability for your tools.
+- **Data-Driven Optimization:** Use the stats to refine your tool descriptions and schemas.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### ⚔️ Multi-Model Support
+Compare how different models handle your tools.
+- Does `gpt-4o` handle your complex schema better than `claude-3-5-sonnet`?
+- Switch models instantly to verify cross-model compatibility.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Database:** MongoDB (Chat history & Eval logs)
+- **AI Integration:** Anthropic SDK / OpenAI SDK / MCP SDK
+
